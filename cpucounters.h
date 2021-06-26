@@ -303,7 +303,8 @@ enum ServerUncoreMemoryMetrics
     PartialWrites,
     Pmem,
     PmemMemoryMode,
-    PmemMixedMode
+    PmemMixedMode,
+    EccCorrectableErrors
 };
 
 //! Object to access uncore counters in a socket/processor with microarchitecture codename SandyBridge-EP (Jaketown) or Ivytown-EP or Ivytown-EX
@@ -373,7 +374,8 @@ public:
         PMM_MM_MISS_CLEAN=2,
         PMM_MM_MISS_DIRTY=3,
         NM_HIT=0,  // NM :  Near Memory (DRAM cache) in Memory Mode
-        M2M_CLOCKTICKS=1
+        M2M_CLOCKTICKS=1,
+        ECC_CORRECTABLE_ERRORS=2
     };
     //! \brief Initialize access data structures
     //! \param socket_ socket id

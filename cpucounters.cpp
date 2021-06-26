@@ -6226,6 +6226,9 @@ void ServerPCICFGUncore::programServerUncoreMemoryMetrics(const ServerUncoreMemo
                 case PartialWrites:
                     MCCntConfig[EventPosition::PARTIAL] = partial_write_event;
                     break;
+                case EccCorrectableErrors:
+                    MCCntConfig[EventPosition::ECC_CORRECTABLE_ERRORS] = MC_CH_PCI_PMON_CTL_EVENT(0x09); // monitor ECC_CORRECTABLE_ERRORS on counter 2
+                    break;
                 default:
                     std::cerr << "PCM Error: unknown metrics: " << metrics << "\n";
                     return false;

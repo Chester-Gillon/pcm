@@ -53,6 +53,7 @@ const uint32 max_imc_controllers = ServerUncoreCounterState::maxControllers;
 typedef struct memdata {
     float iMC_Rd_socket_chan[max_sockets][ServerUncoreCounterState::maxChannels];
     float iMC_Wr_socket_chan[max_sockets][ServerUncoreCounterState::maxChannels];
+    uint64 ecc_correctable_errors[max_sockets][ServerUncoreCounterState::maxChannels];
     float iMC_PMM_Rd_socket_chan[max_sockets][ServerUncoreCounterState::maxChannels];
     float iMC_PMM_Wr_socket_chan[max_sockets][ServerUncoreCounterState::maxChannels];
     float iMC_PMM_MemoryMode_Miss_socket_chan[max_sockets][ServerUncoreCounterState::maxChannels];
@@ -191,6 +192,14 @@ void printSocketChannelBW(PCM */*m*/, memdata_t *md, uint32 no_columns, uint32 s
                 cout << "|--      PMM Writes(MB/s)  : " << setw(8) << md->iMC_PMM_Wr_socket_chan[i][channel] << " --|";
             }
             cout << "\n";
+        }
+        if (md->metrics == EccCorrectableErrors)
+        {
+            for (uint32 i=skt; i<(skt+no_columns); ++i) {
+                cout << "|--      ECC Correctable: " << setw(11) << md->ecc_correctable_errors[i][channel] << " --|";
+            }
+        cout << "\n";
+            
         }
     }
 }
@@ -815,6 +824,10 @@ void calculate_bandwidth(PCM *m,
                     md.iMC_PMM_MemoryMode_Miss_socket[skt] += (pmmMemoryModeCleanMisses + pmmMemoryModeDirtyMisses) / (elapsedTime / 1000.0);
                     md.iMC_PMM_MemoryMode_Hit_socket[skt] += (pmmMemoryModeHits) / (elapsedTime / 1000.0);
                 }
+                else if (metrics == EccCorrectableErrors)
+                {
+                    md.ecc_correctable_errors[skt][channel] = getMCCounter(channel, ServerPCICFGUncore::EventPosition::ECC_CORRECTABLE_ERRORS, uncState1[skt], uncState2[skt]);
+                }
                 else
                 {
                     md.partial_write[skt] += (uint64)(getMCCounter(channel, ServerPCICFGUncore::EventPosition::PARTIAL, uncState1[skt], uncState2[skt]) / (elapsedTime / 1000.0));
@@ -1057,6 +1070,13 @@ int main(int argc, char * argv[])
             strncmp(*argv, "/partial", 8) == 0)
         {
             metrics = PartialWrites;
+            continue;
+        }
+
+        if (strncmp(*argv, "-ecc", 4) == 0 ||
+            strncmp(*argv, "/ecc", 4) == 0)
+        {
+            metrics = EccCorrectableErrors;
             continue;
         }
 #ifdef _MSC_VER
